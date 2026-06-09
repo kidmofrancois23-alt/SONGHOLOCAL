@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sôngho Pro - Multijoueur Local</title>
+    <title>Sôngho Pro - Édition Premium</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="game-container">
-        <h2>SÔNGHO PRO - MULTIJOUEUR LOCAL</h2>
+        <h2>SÔNGHO PRO - ÉDITION VISUELLE</h2>
         
         <div id="status-panel">
-            <div class="status-item">Statut : <span id="game-status" class="badge progress-badge">En cours</span></div>
-            <div class="status-item">Tour : <span id="tour-count">1</span></div>
             <div class="status-item">
-                <label for="start-player-select">Premier coup :</label>
+                Statut : <span id="game-status" class="badge progress-badge">En cours</span>
+            </div>
+            <div class="status-item">
+                Tour : <span id="tour-count">1</span>
+            </div>
+            <div class="status-item">
+                <label for="start-player-select">Début :</label>
                 <select id="start-player-select">
                     <option value="2" selected>Joueur 2 (Haut)</option>
                     <option value="1">Joueur 1 (Bas)</option>
@@ -52,21 +56,32 @@
         <div id="scores">
             <div class="score-box J2">
                 <h3>Joueur 2 (Haut)</h3>
-                <p>Graines capturées : <span id="score-j2">0</span></p>
+                <p><span id="score-j2">0</span> graines</p>
             </div>
             <div class="score-box J1">
                 <h3>Joueur 1 (Bas)</h3>
-                <p>Graines capturées : <span id="score-j1">0</span></p>
+                <p><span id="score-j1">0</span> graines</p>
             </div>
         </div>
 
         <div id="log-container">
-            <h3>Traces de jeu (Logs)</h3>
+            <h3>Historique de la partie</h3>
             <div id="game-logs"></div>
         </div>
         
-        <br>
         <button id="reset-btn">Réinitialiser la partie</button>
+    </div>
+
+    <div id="victory-modal">
+        <div class="modal-content">
+            <h2 id="winner-name">🏆 JOUEUR X GAGNE !</h2>
+            <div class="stats-list">
+                <p>⏱️ Tours joués : <span id="stat-tours">0</span></p>
+                <p>💎 Score du vainqueur : <span id="stat-score">0</span> graines</p>
+                <p>⚡ Record de capture : <span id="stat-record">0</span> pions d'un coup</p>
+            </div>
+            <button id="revanch-btn">PRENDRE MA REVANCHE 🔄</button>
+        </div>
     </div>
 
     <script src="script.js"></script>
