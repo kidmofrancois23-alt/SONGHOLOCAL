@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sôngho Pro - Multijoueur Local</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="game-container">
+        <h2>SÔNGHO PRO - MULTIJOUEUR LOCAL</h2>
+        
+        <div id="status-panel">
+            <div class="status-item">Statut : <span id="game-status" class="badge progress-badge">En cours</span></div>
+            <div class="status-item">Tour : <span id="tour-count">1</span></div>
+            <div class="status-item">
+                <label for="start-player-select">Premier coup :</label>
+                <select id="start-player-select">
+                    <option value="2" selected>Joueur 2 (Haut)</option>
+                    <option value="1">Joueur 1 (Bas)</option>
+                    <option value="random">Aléatoire 🎲</option>
+                </select>
+            </div>
+            <div id="turn-indicator">Initialisation...</div>
+        </div>
+        
+        <div id="notification"></div>
+
+        <div id="board">
+            <div class="row row-j2">
+                <div class="hole" data-index="13"></div>
+                <div class="hole" data-index="12"></div>
+                <div class="hole" data-index="11"></div>
+                <div class="hole" data-index="10"></div>
+                <div class="hole" data-index="9"></div>
+                <div class="hole" data-index="8"></div>
+                <div class="hole" data-index="7"></div>
+            </div>
+
+            <div class="row row-j1">
+                <div class="hole" data-index="0"></div>
+                <div class="hole" data-index="1"></div>
+                <div class="hole" data-index="2"></div>
+                <div class="hole" data-index="3"></div>
+                <div class="hole" data-index="4"></div>
+                <div class="hole" data-index="5"></div>
+                <div class="hole" data-index="6"></div>
+            </div>
+        </div>
+
+        <div id="scores">
+            <div class="score-box J2">
+                <h3>Joueur 2 (Haut)</h3>
+                <p>Graines capturées : <span id="score-j2">0</span></p>
+            </div>
+            <div class="score-box J1">
+                <h3>Joueur 1 (Bas)</h3>
+                <p>Graines capturées : <span id="score-j1">0</span></p>
+            </div>
+        </div>
+
+        <div id="log-container">
+            <h3>Traces de jeu (Logs)</h3>
+            <div id="game-logs"></div>
+        </div>
+        
+        <br>
+        <button id="reset-btn">Réinitialiser la partie</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
