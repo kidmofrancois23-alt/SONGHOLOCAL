@@ -5,6 +5,7 @@ let scores = { "1": 0, "2": 0 };
 let currentTour = 1;
 let isGameOver = false;
 let logs = ["La partie a été réinitialisée. Bonne chance aux deux joueurs !"];
+let maxCaptureRecord = 0; // Stocke la plus grande extraction du match
 
 const holesElements = document.querySelectorAll('.hole');
 const turnIndicator = document.getElementById('turn-indicator');
@@ -14,10 +15,17 @@ const tourCountSpan = document.getElementById('tour-count');
 const logsContainer = document.getElementById('game-logs');
 const notificationElement = document.getElementById('notification');
 const startPlayerSelect = document.getElementById('start-player-select');
+const revanchBtn = document.getElementById('revanch-btn');
 
 if (resetBtn) resetBtn.addEventListener('click', resetLocalGame);
+if (revanchBtn) {
+    revanchBtn.addEventListener('click', () => {
+        document.getElementById('victory-modal').style.display = "none";
+        resetLocalGame();
+        document.getElementById('board').style.pointerEvents = "auto";
+    });
+}
 
-// Écouteur pour changer le joueur de départ avant le premier coup si pas de sauvegarde
 if (startPlayerSelect) {
     startPlayerSelect.addEventListener('change', () => {
         if (currentTour === 1 && scores["1"] === 0 && scores["2"] === 0) {
@@ -109,6 +117,7 @@ function saveGame() {
         currentTour: currentTour,
         isGameOver: isGameOver,
         logs: logs,
+        maxCaptureRecord: maxCaptureRecord,
         selectDisabled: startPlayerSelect ? startPlayerSelect.disabled : false,
         selectValue: startPlayerSelect ? startPlayerSelect.value : "2"
     };
@@ -128,6 +137,7 @@ function loadGame() {
                 currentTour = state.currentTour;
                 isGameOver = state.isGameOver;
                 logs = state.logs;
+                maxCaptureRecord = state.maxCaptureRecord || 0;
                 if (startPlayerSelect) {
                     startPlayerSelect.value = state.selectValue || "2";
                     startPlayerSelect.disabled = state.selectDisabled || false;
@@ -154,10 +164,41 @@ function showNotification(message) {
     }
 }
 
+// Rendu graphique réaliste des graines physiques
+function generateVisualSeeds(holeElement, count) {
+    holeElement.innerHTML = ''; 
+    
+    const countElement = document.createElement('div');
+    countElement.className = 'hole-count';
+    countElement.innerText = count;
+    holeElement.appendChild(countElement);
+
+    for (let i = 0; i < count; i++) {
+        const seed = document.createElement('div');
+        seed.className = 'seed';
+        
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.random() * 22; 
+        
+        const left = 50 + Math.cos(angle) * radius;
+        const top = 50 + Math.sin(angle) * radius;
+
+        seed.style.left = `calc(${left}% - 5px)`;
+        seed.style.top = `calc(${top}% - 5px)`;
+        
+        const randomBright = 90 + Math.floor(Math.random() * 25);
+        seed.style.filter = `brightness(${randomBright}%)`;
+
+        holeElement.appendChild(seed);
+    }
+}
+
 function updateDisplay() {
     holesElements.forEach(hole => {
         const index = parseInt(hole.getAttribute('data-index'));
-        if (!isNaN(index)) hole.innerText = board[index];
+        if (!isNaN(index)) {
+            generateVisualSeeds(hole, board[index]);
+        }
     });
     
     if (document.getElementById('score-j1')) document.getElementById('score-j1').innerText = scores["1"];
@@ -215,7 +256,7 @@ function moveNutritif(index, joueur) {
 }
 
 holesElements.forEach(hole => {
-    hole.addEventListener('click', (e) => {
+    hole.addEventListener('click', async (e) => {
         const targetHole = e.target.closest('.hole');
         if (!targetHole || isGameOver) return;
 
@@ -253,26 +294,37 @@ holesElements.forEach(hole => {
             }
         }
 
-        // Dès qu'un coup valide est joué, on bloque le sélecteur
         if (startPlayerSelect) startPlayerSelect.disabled = true;
-
-        executeMove(selectedIndex);
+        
+        // Bloque le plateau pendant l'animation asynchrone
+        document.getElementById('board').style.pointerEvents = "none";
+        await executeMove(selectedIndex);
+        document.getElementById('board').style.pointerEvents = "auto";
     });
 });
 
-function executeMove(startIndex) {
+async function executeMove(startIndex) {
     let seeds = board[startIndex];
     board[startIndex] = 0;
     let currentIndex = startIndex;
 
+    // ANIMATION DU SEMIS PAS-À-PAS (TRAIL EFFECT)
     while (seeds > 0) {
         currentIndex = (currentIndex + 1) % 14;
         if (currentIndex === startIndex) continue;
+        
         board[currentIndex]++;
         seeds--;
-    }
 
-    playSound('sow');
+        const holeEl = document.querySelector(`.hole[data-index="${currentIndex}"]`);
+        if (holeEl) holeEl.classList.add('sowing-active');
+        
+        playSound('sow');
+        updateDisplay(); 
+
+        await new Promise(resolve => setTimeout(resolve, 90)); // Cadence de 90ms entre chaque trou
+        if (holeEl) holeEl.classList.remove('sowing-active');
+    }
 
     let captured = 0;
     const isJ1Hole = (currentIndex >= 0 && currentIndex <= 6);
@@ -300,6 +352,7 @@ function executeMove(startIndex) {
             logs.push(`⚠️ Tour ${currentTour} : Joueur ${currentPlayer} a joué la case ${startIndex}. Capture annulée car elle affamait l'adversaire.`);
         } else {
             captured = localCaptured;
+            if (captured > maxCaptureRecord) maxCaptureRecord = captured; // Mise à jour du record
             scores[currentPlayer] += captured;
             let logMessage = `Tour ${currentTour} : Joueur ${currentPlayer} a joué la case ${startIndex}.`;
             if (captured > 0) {
@@ -321,27 +374,51 @@ function executeMove(startIndex) {
         scores["2"] += j2Total;
         board.fill(0, 7, 14);
         logs.push("❌ FIN : Le Joueur 1 ne peut plus être nourri. Le Joueur 2 récupère le reste.");
-        playSound('win');
     } else if (nextPlayer === 2 && j2Total === 0) {
         isGameOver = true;
         scores["1"] += j1Total;
         board.fill(0, 0, 7);
         logs.push("❌ FIN : Le Joueur 2 ne peut plus être nourri. Le Joueur 1 récupère le reste.");
-        playSound('win');
     }
 
     if (scores["1"] > 35 || scores["2"] > 35) {
         isGameOver = true;
         let gagnant = scores["1"] > 35 ? "Joueur 1" : "Joueur 2";
         logs.push(`🏆 VICTOIRE : Le ${gagnant} a capturé la majorité des pions !`);
-        playSound('win');
     }
 
-    if (currentPlayer === 1) currentTour++;
-    currentPlayer = nextPlayer;
+    if (isGameOver) {
+        showVictoryModal();
+    } else {
+        if (currentPlayer === 1) currentTour++;
+        currentPlayer = nextPlayer;
+    }
     
     saveGame(); 
     updateDisplay();
+}
+
+function showVictoryModal() {
+    const modal = document.getElementById('victory-modal');
+    const winnerName = document.getElementById('winner-name');
+    if (!modal) return;
+
+    let gagnant = "JOUEUR 2 (Haut)";
+    let scoreVainqueur = scores["2"];
+    if (scores["1"] > scores["2"]) {
+        gagnant = "JOUEUR 1 (Bas)";
+        scoreVainqueur = scores["1"];
+    } else if (scores["1"] === scores["2"]) {
+        gagnant = "ÉGALITÉ PARFAITE 🤝";
+    }
+
+    winnerName.innerText = (scores["1"] === scores["2"]) ? gagnant : `🏆 ${gagnant} GAGNE !`;
+    document.getElementById('stat-tours').innerText = currentTour;
+    document.getElementById('stat-score').innerText = scoreVainqueur;
+    document.getElementById('stat-record').innerText = maxCaptureRecord;
+    
+    modal.style.display = "flex";
+    playSound('win');
 }
 
 function resetLocalGame() {
@@ -349,14 +426,15 @@ function resetLocalGame() {
     scores = { "1": 0, "2": 0 };
     currentTour = 1;
     isGameOver = false;
+    maxCaptureRecord = 0;
     if (startPlayerSelect) startPlayerSelect.disabled = false;
     
-    determineStartingPlayer(); // Applique le choix du joueur au moment du reset
+    determineStartingPlayer(); 
     localStorage.removeItem('songho_save'); 
     updateDisplay();
 }
 
-// Lancement de sécurité initial
+// Lancement initial sécurisé
 if (!loadGame()) {
     resetLocalGame(); 
 } else {
