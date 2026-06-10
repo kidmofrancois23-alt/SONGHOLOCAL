@@ -70,8 +70,42 @@ h2 {
 .menu-subtitle {
     font-style: italic;
     color: #f0e6d2;
-    margin-bottom: 35px;
+    margin-bottom: 25px;
     font-size: 1.05rem;
+}
+
+/* Boite de configuration Quantum */
+.time-config-box {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.time-config-box label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+    color: #f0e6d2;
+}
+.time-config-box input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #5c3a21;
+    text-align: center;
+    box-sizing: border-box;
+}
+.time-hint {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.8rem;
+    color: #dfdfdf;
+    text-align: center;
 }
 
 .menu-buttons {
@@ -96,6 +130,37 @@ h2 {
 .menu-btn.primary:hover { background-color: #43a047; }
 .menu-btn.secondary { background-color: #e2d7c5; color: #5c3a21; border: 2px solid #ccbba3; }
 .menu-btn.secondary:hover { background-color: #d7c9b1; }
+
+/* ==========================================
+   ZONE DU TIMRE VISUEL (CHRONO)
+   ========================================== */
+#timer-container {
+    background-color: #e2d7c5;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #d7c9b1;
+}
+#timer-text {
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: #5c3a21;
+    margin-bottom: 5px;
+    text-align: left;
+}
+#timer-bar-bg {
+    width: 100%;
+    height: 10px;
+    background-color: #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+}
+#timer-bar-fill {
+    height: 100%;
+    width: 100%;
+    background-color: #4CAF50;
+    transition: width 0.1s linear, background-color 0.5s ease;
+}
 
 /* ==========================================
    PANNEAU DE STATUT
@@ -202,14 +267,13 @@ button:hover { background-color: #5c3a21; }
 .rules-content h2 { text-align: center; margin-bottom: 15px; }
 
 .rules-body {
-    max-height: 350px; overflow-y: auto; padding-right: 10px;
+    max-height: 300px; overflow-y: auto; padding-right: 10px;
 }
 .rules-body h3 { color: #8b5a2b; font-size: 1.05rem; margin: 15px 0 5px 0; border-bottom: 1px dashed #ccbba3; padding-bottom: 3px; }
 .rules-body p { margin: 0 0 10px 0; font-size: 0.9rem; color: #444; line-height: 1.4; }
 
 @keyframes popIn { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-.modal-content h2 { color: #8b5a2b; font-size: 1.8rem; margin: 0; }
 .stats-list { text-align: left; background: #e2d7c5; padding: 15px; border-radius: 10px; margin: 15px 0; border: 1px solid #d7c9b1; }
 .stats-list p { margin: 8px 0; font-weight: bold; color: #5c3a21; font-size: 0.95rem; }
 
