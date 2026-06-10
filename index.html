@@ -3,23 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Songho Local</title>
+    <title>Songho</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="main-menu">
-        <h1>SONGHO LOCAL</h1>
+        <h1>SONGHO</h1>
         <p class="menu-subtitle">Le jeu de stratégie traditionnel africain</p>
+        
+        <div class="time-config-box">
+            <label for="quantum-input">⏱️ Temps par tour (secondes) :</label>
+            <input type="number" id="quantum-input" min="5" max="60" value="15">
+            <small class="time-hint">(Choisissez entre 5s et 60s)</small>
+        </div>
+
         <div class="menu-buttons">
-            <button id="start-game-btn" class="menu-btn primary">LANCOUGER LA PARTIE 🎮</button>
+            <button id="start-game-btn" class="menu-btn primary">LANCER LA PARTIE 🎮</button>
             <button id="open-rules-btn" class="menu-btn secondary">RÈGLES & PRINCIPES 📜</button>
         </div>
     </div>
 
     <div id="game-container" style="display: none;">
         <div class="header-inline">
-            <h2>SONGHO Local</h2>
+            <h2>SONGHO</h2>
             <button id="quit-game-btn">Quitter 🚪</button>
         </div>
         
@@ -39,6 +46,13 @@
                 </select>
             </div>
             <div id="turn-indicator">Initialisation...</div>
+        </div>
+        
+        <div id="timer-container">
+            <div id="timer-text">⏳ Temps restant : <span id="timer-counter">15</span>s</div>
+            <div id="timer-bar-bg">
+                <div id="timer-bar-fill"></div>
+            </div>
         </div>
         
         <div id="notification"></div>
@@ -88,6 +102,9 @@
         <div class="modal-content rules-content">
             <h2>📜 Règles & Principes du Sôngho</h2>
             <div class="rules-body">
+                <h3>⚡ LE QUANTUM DE TEMPS</h3>
+                <p style="color: #b71c1c; font-weight: bold; background: #ffebee; padding: 8px; border-radius: 4px;">Attention : Si le chronomètre tombe à 0s avant d'avoir choisi un trou, votre tour est automatiquement sauté et la main passe à l'adversaire !</p>
+
                 <h3>1. Le But du Jeu</h3>
                 <p>Capturer le maximum de graines possible. La partie se termine dès qu'un joueur obtient la majorité absolue (plus de 35 graines sur les 70 initiales).</p>
                 
@@ -95,10 +112,10 @@
                 <p>À votre tour, choisissez un trou de votre camp contenant des graines. Celles-ci sont extraites et redistribuées une à une, dans le sens antihoraire, dans les trous suivants (en sautant votre trou de départ s'il y a plus de 13 graines).</p>
                 
                 <h3>3. La Capture</h3>
-                <p>Si la dernière graine semée tombe dans le camp adverse ET que ce trou compte désormais <strong>2, 3 ou 4 graines</strong>, vous capturez toutes ces graines. La rafle se poursuit à reculons tant que les trous précédents répondent aux mêmes critères.</p>
+                <p>Si la dernière graine semée tombe dans le camp adverse ET que ce trou compte désormais 2, 3 ou 4 graines, vous capturez toutes ces graines. La rafle se poursuit à reculons tant que les critères sont respectés.</p>
                 
-                <h3>4. La Règle de Famine (Crucial)</h3>
-                <p>Il est strictement interdit d'affamer son adversaire. Si celui-ci n'a plus aucune graine dans son camp, vous devez obligatoirement jouer un coup qui lui apporte au moins une graine. De même, une capture qui priverait l'adversaire de toutes ses graines est automatiquement annulée.</p>
+                <h3>4. La Règle de Famine</h3>
+                <p>Il est strictement interdit d'affamer son adversaire. Si celui-ci n'a plus aucune graine, vous devez jouer un coup qui le nourrit. De même, une capture qui le priverait de toutes ses graines est annulée.</p>
             </div>
             <button id="close-rules-btn">J'ai compris, Fermer 👍</button>
         </div>
