@@ -1,11 +1,12 @@
-// Configuration de la mémoire de jeu 
+// Configuration globale 
 let board = Array(14).fill(5); 
 let currentPlayer = 2; 
 let scores = { "1": 0, "2": 0 };
 let currentTour = 1;
 let isGameOver = false;
 let logs = ["La partie a été réinitialisée. Bonne chance aux deux joueurs !"];
-let maxCaptureRecord = 0; // Stocke la plus grande extraction du match
+let maxCaptureRecord = 0; 
+let isGameActive = false; // Permet de savoir si on est au menu ou en jeu
 
 const holesElements = document.querySelectorAll('.hole');
 const turnIndicator = document.getElementById('turn-indicator');
@@ -16,6 +17,41 @@ const logsContainer = document.getElementById('game-logs');
 const notificationElement = document.getElementById('notification');
 const startPlayerSelect = document.getElementById('start-player-select');
 const revanchBtn = document.getElementById('revanch-btn');
+
+// Nouveaux Éléments de l'interface Menu/Règles/Quitter
+const mainMenu = document.getElementById('main-menu');
+const gameContainer = document.getElementById('game-container');
+const startGameBtn = document.getElementById('start-game-btn');
+const quitGameBtn = document.getElementById('quit-game-btn');
+const openRulesBtn = document.getElementById('open-rules-btn');
+const closeRulesBtn = document.getElementById('close-rules-btn');
+const rulesModal = document.getElementById('rules-modal');
+
+// ÉCOUTEURS D'ÉVÉNEMENTS DES NOUVEAUX BOUTONS
+if (startGameBtn) {
+    startGameBtn.addEventListener('click', () => {
+        isGameActive = true;
+        mainMenu.style.display = "none";
+        gameContainer.style.display = "block";
+        saveMenuState();
+        updateDisplay();
+    });
+}
+
+if (quitGameBtn) {
+    quitGameBtn.addEventListener('click', () => {
+        if (confirm("Êtes-vous sûr de vouloir abandonner la partie en cours ?")) {
+            isGameActive = false;
+            mainMenu.style.display = "block";
+            gameContainer.style.display = "none";
+            resetLocalGame(); // Réinitialise tout proprement
+            saveMenuState();
+        }
+    });
+}
+
+if (openRulesBtn) openRulesBtn.addEventListener('click', () => rulesModal.style.display = "flex");
+if (closeRulesBtn) closeRulesBtn.addEventListener('click', () => rulesModal.style.display = "none");
 
 if (resetBtn) resetBtn.addEventListener('click', resetLocalGame);
 if (revanchBtn) {
@@ -48,14 +84,12 @@ function determineStartingPlayer() {
 }
 
 // ==========================================
-// MOTEUR AUDIO (Synthèse sonore Web Audio API)
+// MOTEUR AUDIO (Web Audio API)
 // ==========================================
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playSound(type) {
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
@@ -68,8 +102,7 @@ function playSound(type) {
         osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.08);
         gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.08);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.08);
     } 
     else if (type === 'capture') { 
         osc.type = 'sine';
@@ -77,16 +110,14 @@ function playSound(type) {
         osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
         gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
     } 
     else if (type === 'error') { 
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(120, audioCtx.currentTime);
         gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.2);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
     }
     else if (type === 'win') { 
         const notes = [523.25, 659.25, 783.99, 1046.50]; 
@@ -100,14 +131,13 @@ function playSound(type) {
             individualGain.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
             individualOsc.connect(individualGain);
             individualGain.connect(audioCtx.destination);
-            individualOsc.start(time);
-            individualOsc.stop(time + 0.25);
+            individualOsc.start(time); individualOsc.stop(time + 0.25);
         });
     }
 }
 
 // ==========================================
-// GESTION DU LOCALSTORAGE (Sauvegarde)
+// GESTION DE LA SAUVEGARDE
 // ==========================================
 function saveGame() {
     const gameState = {
@@ -119,9 +149,22 @@ function saveGame() {
         logs: logs,
         maxCaptureRecord: maxCaptureRecord,
         selectDisabled: startPlayerSelect ? startPlayerSelect.disabled : false,
-        selectValue: startPlayerSelect ? startPlayerSelect.value : "2"
+        selectValue: startPlayerSelect ? startPlayerSelect.value : "2",
+        isGameActive: isGameActive
     };
     localStorage.setItem('songho_save', JSON.stringify(gameState));
+}
+
+function saveMenuState() {
+    // Permet de mémoriser si le joueur était sur l'écran d'accueil ou en partie
+    let savedState = localStorage.getItem('songho_save');
+    if (savedState) {
+        let state = JSON.parse(savedState);
+        state.isGameActive = isGameActive;
+        localStorage.setItem('songho_save', JSON.stringify(state));
+    } else {
+        saveGame();
+    }
 }
 
 function loadGame() {
@@ -129,21 +172,29 @@ function loadGame() {
         const savedState = localStorage.getItem('songho_save');
         if (savedState) {
             const state = JSON.parse(savedState);
-            const totalSeeds = state.board.reduce((a, b) => a + b, 0);
-            if (totalSeeds > 0) {
-                board = state.board;
-                currentPlayer = state.currentPlayer;
-                scores = state.scores;
-                currentTour = state.currentTour;
-                isGameOver = state.isGameOver;
-                logs = state.logs;
-                maxCaptureRecord = state.maxCaptureRecord || 0;
-                if (startPlayerSelect) {
-                    startPlayerSelect.value = state.selectValue || "2";
-                    startPlayerSelect.disabled = state.selectDisabled || false;
-                }
-                return true;
+            board = state.board;
+            currentPlayer = state.currentPlayer;
+            scores = state.scores;
+            currentTour = state.currentTour;
+            isGameOver = state.isGameOver;
+            logs = state.logs;
+            maxCaptureRecord = state.maxCaptureRecord || 0;
+            isGameActive = state.isGameActive !== undefined ? state.isGameActive : false;
+            
+            if (startPlayerSelect) {
+                startPlayerSelect.value = state.selectValue || "2";
+                startPlayerSelect.disabled = state.selectDisabled || false;
             }
+
+            // Gère l'affichage correct des écrans restaurés
+            if (isGameActive) {
+                mainMenu.style.display = "none";
+                gameContainer.style.display = "block";
+            } else {
+                mainMenu.style.display = "block";
+                gameContainer.style.display = "none";
+            }
+            return true;
         }
     } catch (e) {
         console.error("Erreur de lecture de la sauvegarde", e);
@@ -158,16 +209,12 @@ function showNotification(message) {
         notificationElement.innerText = message;
         notificationElement.style.display = "block";
         playSound('error'); 
-        notificationTimeout = setTimeout(() => {
-            notificationElement.style.display = "none";
-        }, 3500);
+        notificationTimeout = setTimeout(() => { notificationElement.style.display = "none"; }, 3500);
     }
 }
 
-// Rendu graphique réaliste des graines physiques
 function generateVisualSeeds(holeElement, count) {
     holeElement.innerHTML = ''; 
-    
     const countElement = document.createElement('div');
     countElement.className = 'hole-count';
     countElement.innerText = count;
@@ -176,19 +223,14 @@ function generateVisualSeeds(holeElement, count) {
     for (let i = 0; i < count; i++) {
         const seed = document.createElement('div');
         seed.className = 'seed';
-        
         const angle = Math.random() * Math.PI * 2;
         const radius = Math.random() * 22; 
-        
         const left = 50 + Math.cos(angle) * radius;
         const top = 50 + Math.sin(angle) * radius;
-
         seed.style.left = `calc(${left}% - 5px)`;
         seed.style.top = `calc(${top}% - 5px)`;
-        
         const randomBright = 90 + Math.floor(Math.random() * 25);
         seed.style.filter = `brightness(${randomBright}%)`;
-
         holeElement.appendChild(seed);
     }
 }
@@ -196,9 +238,7 @@ function generateVisualSeeds(holeElement, count) {
 function updateDisplay() {
     holesElements.forEach(hole => {
         const index = parseInt(hole.getAttribute('data-index'));
-        if (!isNaN(index)) {
-            generateVisualSeeds(hole, board[index]);
-        }
+        if (!isNaN(index)) generateVisualSeeds(hole, board[index]);
     });
     
     if (document.getElementById('score-j1')) document.getElementById('score-j1').innerText = scores["1"];
@@ -249,9 +289,7 @@ function moveNutritif(index, joueur) {
     let adversaire = joueur === 1 ? 2 : 1;
     let totalAdversaire = 0;
     let start = (adversaire === 1) ? 0 : 7;
-    for (let i = start; i < start + 7; i++) {
-        totalAdversaire += tempBoard[i];
-    }
+    for (let i = start; i < start + 7; i++) totalAdversaire += tempBoard[i];
     return totalAdversaire > 0;
 }
 
@@ -296,7 +334,6 @@ holesElements.forEach(hole => {
 
         if (startPlayerSelect) startPlayerSelect.disabled = true;
         
-        // Bloque le plateau pendant l'animation asynchrone
         document.getElementById('board').style.pointerEvents = "none";
         await executeMove(selectedIndex);
         document.getElementById('board').style.pointerEvents = "auto";
@@ -308,7 +345,6 @@ async function executeMove(startIndex) {
     board[startIndex] = 0;
     let currentIndex = startIndex;
 
-    // ANIMATION DU SEMIS PAS-À-PAS (TRAIL EFFECT)
     while (seeds > 0) {
         currentIndex = (currentIndex + 1) % 14;
         if (currentIndex === startIndex) continue;
@@ -322,7 +358,7 @@ async function executeMove(startIndex) {
         playSound('sow');
         updateDisplay(); 
 
-        await new Promise(resolve => setTimeout(resolve, 90)); // Cadence de 90ms entre chaque trou
+        await new Promise(resolve => setTimeout(resolve, 90)); 
         if (holeEl) holeEl.classList.remove('sowing-active');
     }
 
@@ -349,14 +385,14 @@ async function executeMove(startIndex) {
 
         if (totalAdversaireApresCapture === 0 && localCaptured > 0) {
             board = tempBoardBeforeCapture;
-            logs.push(`⚠️ Tour ${currentTour} : Joueur ${currentPlayer} a joué la case ${startIndex}. Capture annulée car elle affamait l'adversaire.`);
+            logs.push(`⚠️ Tour ${currentTour} : Capture annulée (Famine imposée).`);
         } else {
             captured = localCaptured;
-            if (captured > maxCaptureRecord) maxCaptureRecord = captured; // Mise à jour du record
+            if (captured > maxCaptureRecord) maxCaptureRecord = captured; 
             scores[currentPlayer] += captured;
             let logMessage = `Tour ${currentTour} : Joueur ${currentPlayer} a joué la case ${startIndex}.`;
             if (captured > 0) {
-                logMessage += ` Extraction réussie de ${captured} pions !`;
+                logMessage += ` Extraction de ${captured} pions !`;
                 playSound('capture'); 
             }
             logs.push(logMessage);
@@ -370,21 +406,17 @@ async function executeMove(startIndex) {
     let j2Total = board.slice(7, 14).reduce((a, b) => a + b, 0);
 
     if (nextPlayer === 1 && j1Total === 0) {
-        isGameOver = true;
-        scores["2"] += j2Total;
-        board.fill(0, 7, 14);
-        logs.push("❌ FIN : Le Joueur 1 ne peut plus être nourri. Le Joueur 2 récupère le reste.");
+        isGameOver = true; scores["2"] += j2Total; board.fill(0, 7, 14);
+        logs.push("❌ FIN : Le Joueur 1 est affamé. Joueur 2 ramasse le reste.");
     } else if (nextPlayer === 2 && j2Total === 0) {
-        isGameOver = true;
-        scores["1"] += j1Total;
-        board.fill(0, 0, 7);
-        logs.push("❌ FIN : Le Joueur 2 ne peut plus être nourri. Le Joueur 1 récupère le reste.");
+        isGameOver = true; scores["1"] += j1Total; board.fill(0, 0, 7);
+        logs.push("❌ FIN : Le Joueur 2 est affamé. Joueur 1 ramasse le reste.");
     }
 
     if (scores["1"] > 35 || scores["2"] > 35) {
         isGameOver = true;
         let gagnant = scores["1"] > 35 ? "Joueur 1" : "Joueur 2";
-        logs.push(`🏆 VICTOIRE : Le ${gagnant} a capturé la majorité des pions !`);
+        logs.push(`🏆 VICTOIRE : Le ${gagnant} a la majorité !`);
     }
 
     if (isGameOver) {
@@ -430,13 +462,11 @@ function resetLocalGame() {
     if (startPlayerSelect) startPlayerSelect.disabled = false;
     
     determineStartingPlayer(); 
-    localStorage.removeItem('songho_save'); 
+    saveGame();
     updateDisplay();
 }
 
-// Lancement initial sécurisé
+// Initialisation au chargement
 if (!loadGame()) {
     resetLocalGame(); 
-} else {
-    updateDisplay();
 }
