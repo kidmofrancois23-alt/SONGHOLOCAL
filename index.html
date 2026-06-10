@@ -8,8 +8,20 @@
 </head>
 <body>
 
-    <div id="game-container">
-        <h2>SÔNGHO PRO - ÉDITION VISUELLE</h2>
+    <div id="main-menu">
+        <h1>SÔNGHO PRO</h1>
+        <p class="menu-subtitle">Le jeu de stratégie traditionnel africain</p>
+        <div class="menu-buttons">
+            <button id="start-game-btn" class="menu-btn primary">LANCOUGER LA PARTIE 🎮</button>
+            <button id="open-rules-btn" class="menu-btn secondary">RÈGLES & PRINCIPES 📜</button>
+        </div>
+    </div>
+
+    <div id="game-container" style="display: none;">
+        <div class="header-inline">
+            <h2>SÔNGHO PRO</h2>
+            <button id="quit-game-btn">Quitter 🚪</button>
+        </div>
         
         <div id="status-panel">
             <div class="status-item">
@@ -69,10 +81,30 @@
             <div id="game-logs"></div>
         </div>
         
-        <button id="reset-btn">Réinitialiser la partie</button>
+        <button id="reset-btn">Réinitialiser le plateau</button>
     </div>
 
-    <div id="victory-modal">
+    <div id="rules-modal" class="modal-overlay">
+        <div class="modal-content rules-content">
+            <h2>📜 Règles & Principes du Sôngho</h2>
+            <div class="rules-body">
+                <h3>1. Le But du Jeu</h3>
+                <p>Capturer le maximum de graines possible. La partie se termine dès qu'un joueur obtient la majorité absolue (plus de 35 graines sur les 70 initiales).</p>
+                
+                <h3>2. Le Semis (Distribution)</h3>
+                <p>À votre tour, choisissez un trou de votre camp contenant des graines. Celles-ci sont extraites et redistribuées une à une, dans le sens antihoraire, dans les trous suivants (en sautant votre trou de départ s'il y a plus de 13 graines).</p>
+                
+                <h3>3. La Capture</h3>
+                <p>Si la dernière graine semée tombe dans le camp adverse ET que ce trou compte désormais <strong>2, 3 ou 4 graines</strong>, vous capturez toutes ces graines. La rafle se poursuit à reculons tant que les trous précédents répondent aux mêmes critères.</p>
+                
+                <h3>4. La Règle de Famine (Crucial)</h3>
+                <p>Il est strictement interdit d'affamer son adversaire. Si celui-ci n'a plus aucune graine dans son camp, vous devez obligatoirement jouer un coup qui lui apporte au moins une graine. De même, une capture qui priverait l'adversaire de toutes ses graines est automatiquement annulée.</p>
+            </div>
+            <button id="close-rules-btn">J'ai compris, Fermer 👍</button>
+        </div>
+    </div>
+
+    <div id="victory-modal" class="modal-overlay">
         <div class="modal-content">
             <h2 id="winner-name">🏆 JOUEUR X GAGNE !</h2>
             <div class="stats-list">
