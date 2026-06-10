@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Songho</title>
+    <title>SONGHO</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,7 +27,10 @@
     <div id="game-container" style="display: none;">
         <div class="header-inline">
             <h2>SONGHO</h2>
-            <button id="quit-game-btn">Quitter 🚪</button>
+            <div style="display: flex; gap: 10px;">
+                <button id="pause-game-btn">Pause ⏸️</button>
+                <button id="quit-game-btn">Quitter 🚪</button>
+            </div>
         </div>
         
         <div id="status-panel">
@@ -100,10 +103,10 @@
 
     <div id="rules-modal" class="modal-overlay">
         <div class="modal-content rules-content">
-            <h2>📜 Règles & Principes du Sôngho</h2>
+            <h2>📜 Règles & Principes du Songho</h2>
             <div class="rules-body">
-                <h3>⚡ LE QUANTUM DE TEMPS</h3>
-                <p style="color: #b71c1c; font-weight: bold; background: #ffebee; padding: 8px; border-radius: 4px;">Attention : Si le chronomètre tombe à 0s avant d'avoir choisi un trou, votre tour est automatiquement sauté et la main passe à l'adversaire !</p>
+                <h3>⚡ LE QUANTUM DE TEMPS & PAUSE</h3>
+                <p style="color: #b71c1c; font-weight: bold; background: #ffebee; padding: 8px; border-radius: 4px;">Attention : Si le chronomètre tombe à 0s avant d'avoir choisi un trou, votre tour est automatiquement sauté ! Vous pouvez utiliser le bouton Pause en haut à droite pour figer le chronomètre et la partie à tout moment.</p>
 
                 <h3>1. Le But du Jeu</h3>
                 <p>Capturer le maximum de graines possible. La partie se termine dès qu'un joueur obtient la majorité absolue (plus de 35 graines sur les 70 initiales).</p>
