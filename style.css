@@ -13,21 +13,92 @@ body {
     box-sizing: border-box;
 }
 
-#game-container {
+#game-container, #main-menu {
     text-align: center;
     max-width: 700px;
     width: 100%;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
 }
 
 h2 {
     color: #5c3a21;
     letter-spacing: 1px;
-    margin-bottom: 15px;
+    margin: 0;
     font-size: 1.5rem;
 }
 
+.header-inline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#quit-game-btn {
+    width: auto;
+    margin: 0;
+    padding: 6px 15px;
+    background-color: #d32f2f;
+    font-size: 0.85rem;
+}
+#quit-game-btn:hover { background-color: #b71c1c; }
+
 /* ==========================================
-   PANNEAU DE STATUT (Bandeau supérieur)
+   ÉCRAN D'ACCUEIL / MENU PRINCIPAL
+   ========================================== */
+#main-menu {
+    background-color: #8b5a2b;
+    padding: 40px 20px;
+    border-radius: 20px;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+    border: 4px solid #70451f;
+    color: white;
+    max-width: 450px;
+}
+
+#main-menu h1 {
+    font-size: 2.8rem;
+    margin: 0 0 5px 0;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+}
+
+.menu-subtitle {
+    font-style: italic;
+    color: #f0e6d2;
+    margin-bottom: 35px;
+    font-size: 1.05rem;
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.menu-btn {
+    padding: 15px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+    width: 100%;
+}
+.menu-btn:hover { transform: scale(1.02); }
+
+.menu-btn.primary { background-color: #4CAF50; color: white; box-shadow: 0 4px 10px rgba(76,175,80,0.3); }
+.menu-btn.primary:hover { background-color: #43a047; }
+.menu-btn.secondary { background-color: #e2d7c5; color: #5c3a21; border: 2px solid #ccbba3; }
+.menu-btn.secondary:hover { background-color: #d7c9b1; }
+
+/* ==========================================
+   PANNEAU DE STATUT
    ========================================== */
 #status-panel {
     background-color: #e2d7c5;
@@ -45,52 +116,25 @@ h2 {
     font-size: 0.9rem;
 }
 
-.badge {
-    padding: 4px 10px;
-    border-radius: 4px;
-    color: white;
-}
+.badge { padding: 4px 10px; border-radius: 4px; color: white; }
 .progress-badge { background-color: #2196F3; }
 .over-badge { background-color: #f44336; }
-
-#turn-indicator {
-    font-size: 1rem;
-    color: #5c3a21;
-    width: 100%;
-}
+#turn-indicator { font-size: 1rem; color: #5c3a21; width: 100%; }
 
 #start-player-select {
-    padding: 4px 8px;
-    border-radius: 4px;
-    background-color: #fff;
-    color: #5c3a21;
-    border: 1px solid #ccbba3;
-    font-weight: bold;
-    cursor: pointer;
+    padding: 4px 8px; border-radius: 4px; background-color: #fff;
+    color: #5c3a21; border: 1px solid #ccbba3; font-weight: bold; cursor: pointer;
 }
-#start-player-select:disabled {
-    background-color: #e9e9e9;
-    color: #888;
-    cursor: not-allowed;
-}
+#start-player-select:disabled { background-color: #e9e9e9; color: #888; cursor: not-allowed; }
 
 /* ==========================================
-   ZONE DE NOTIFICATION FLUIDE (Erreurs)
+   ZONE DE NOTIFICATION (Erreurs)
    ========================================== */
 #notification {
-    min-height: 20px;
-    margin-bottom: 15px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    color: #d32f2f;
-    background-color: #ffebee;
-    border: 1px solid #ffcdd2;
-    border-radius: 5px;
-    padding: 8px;
-    display: none;
-    animation: shake 0.3s ease-in-out;
+    min-height: 20px; margin-bottom: 15px; font-weight: bold; font-size: 0.9rem;
+    color: #d32f2f; background-color: #ffebee; border: 1px solid #ffcdd2;
+    border-radius: 5px; padding: 8px; display: none; animation: shake 0.3s ease-in-out;
 }
-
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-6px); }
@@ -98,194 +142,82 @@ h2 {
 }
 
 /* ==========================================
-   LE TABLIER DE JEU (Responsive)
+   LE TABLIER DE JEU
    ========================================== */
 #board {
-    background-color: #8b5a2b;
-    padding: 15px;
-    border-radius: 18px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.35);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    border: 3px solid #70451f;
+    background-color: #8b5a2b; padding: 15px; border-radius: 18px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.35); display: flex; flex-direction: column; gap: 15px; border: 3px solid #70451f;
 }
+.row { display: flex; gap: 10px; justify-content: center; }
 
-.row {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-/* Les Trous creux */
 .hole {
-    position: relative;
-    width: 13%;
-    aspect-ratio: 1 / 1;
-    background-color: #5c3a21;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: inset 0 4px 8px rgba(0,0,0,0.6);
-    transition: transform 0.2s, background-color 0.2s;
-    user-select: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
+    position: relative; width: 13%; aspect-ratio: 1 / 1; background-color: #5c3a21;
+    border-radius: 50%; cursor: pointer; box-shadow: inset 0 4px 8px rgba(0,0,0,0.6);
+    transition: transform 0.2s, background-color 0.2s; user-select: none; display: flex; justify-content: center; align-items: center; overflow: hidden;
 }
+.hole:hover { transform: scale(1.05); background-color: #4a2e1a; }
+.hole.sowing-active { background-color: #7d4d2b; box-shadow: inset 0 0 15px #e5c158, 0 0 10px rgba(229, 193, 88, 0.5); transform: scale(1.08); }
 
-.hole:hover { 
-    transform: scale(1.05);
-    background-color: #4a2e1a;
-}
-
-/* Animation de surbrillance lors du semis progressif */
-.hole.sowing-active {
-    background-color: #7d4d2b;
-    box-shadow: inset 0 0 15px #e5c158, 0 0 10px rgba(229, 193, 88, 0.5);
-    transform: scale(1.08);
-}
-
-/* Compteur de texte superposé */
-.hole-count {
-    position: absolute;
-    z-index: 2;
-    color: rgba(255, 255, 255, 0.85);
-    font-weight: bold;
-    font-size: 1.1rem;
-    pointer-events: none;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
-}
-
-/* Les composants physiques des graines */
-.seed {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: #e5c158;
-    border-radius: 50%;
-    box-shadow: 1px 1px 2px rgba(0,0,0,0.4);
-    transition: all 0.2s ease;
-    z-index: 1;
-}
+.hole-count { position: absolute; z-index: 2; color: rgba(255, 255, 255, 0.85); font-weight: bold; font-size: 1.1rem; pointer-events: none; text-shadow: 1px 1px 3px rgba(0,0,0,0.9); }
+.seed { position: absolute; width: 10px; height: 10px; background-color: #e5c158; border-radius: 50%; box-shadow: 1px 1px 2px rgba(0,0,0,0.4); transition: all 0.2s ease; z-index: 1; }
 
 /* ==========================================
-   COMPTEURS DE SCORES
+   SCORES ET LOGS
    ========================================== */
-#scores {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-}
-
-.score-box {
-    width: 48%;
-    background-color: #fff;
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    border-bottom: 4px solid #ccc;
-}
+#scores { display: flex; justify-content: space-between; margin-top: 15px; }
+.score-box { width: 48%; background-color: #fff; border-radius: 8px; padding: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); border-bottom: 4px solid #ccc; }
 .score-box.J2 { border-bottom-color: #2196F3; }
 .score-box.J1 { border-bottom-color: #4CAF50; }
-
 .score-box h3 { margin: 0 0 5px 0; font-size: 0.9rem; color: #5c3a21;}
 .score-box p { margin: 0; font-size: 1.2rem; font-weight: bold; }
 
-/* ==========================================
-   CONSOLE TERMINAL (Traces de jeu)
-   ========================================== */
-#log-container {
-    margin-top: 15px;
-    background-color: #1e1e1e;
-    color: #ced4da;
-    border-radius: 8px;
-    padding: 10px;
-    text-align: left;
-}
-
-#log-container h3 {
-    margin: 0 0 5px 0;
-    font-size: 0.8rem;
-    color: #ffc107;
-    text-transform: uppercase;
-    border-bottom: 1px solid #333;
-    padding-bottom: 4px;
-}
-
-#game-logs {
-    max-height: 100px;
-    overflow-y: auto;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.8rem;
-}
-
+#log-container { margin-top: 15px; background-color: #1e1e1e; color: #ced4da; border-radius: 8px; padding: 10px; text-align: left; }
+#log-container h3 { margin: 0 0 5px 0; font-size: 0.8rem; color: #ffc107; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 4px; }
+#game-logs { max-height: 100px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.8rem; }
 .log-entry { margin-bottom: 3px; }
 .log-entry.system { color: #17a2b8; font-style: italic; }
 .log-entry.j1 { color: #81c784; }
 .log-entry.j2 { color: #64b5f6; }
 
-button {
-    padding: 10px 20px;
-    background-color: #8b5a2b;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.9rem;
-    margin-top: 10px;
-    width: 100%;
-}
+button { padding: 10px 20px; background-color: #8b5a2b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; margin-top: 10px; width: 100%; }
 button:hover { background-color: #5c3a21; }
 
 /* ==========================================
-   FENÊTRE POP-UP DE VICTOIRE
+   MODALS / FENÊTRES FLOTTANTES (Overlay)
    ========================================== */
-#victory-modal {
-    display: none;
-    position: fixed;
-    z-index: 100;
-    left: 0; top: 0; width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.85);
-    backdrop-filter: blur(5px);
-    justify-content: center;
-    align-items: center;
+.modal-overlay {
+    display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); justify-content: center; align-items: center;
 }
 
 .modal-content {
-    background-color: #f0e6d2;
-    padding: 30px;
-    border-radius: 20px;
-    text-align: center;
-    border: 5px solid #8b5a2b;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: 0 0 30px rgba(0,0,0,0.6);
+    background-color: #f0e6d2; padding: 30px; border-radius: 20px; text-align: center;
+    border: 5px solid #8b5a2b; max-width: 400px; width: 90%; box-shadow: 0 0 30px rgba(0,0,0,0.6);
     animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-@keyframes popIn {
-    from { transform: scale(0.6); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+.rules-content {
+    max-width: 550px; text-align: left;
 }
+.rules-content h2 { text-align: center; margin-bottom: 15px; }
 
-.modal-content h2 { color: #8b5a2b; font-size: 1.8rem; margin: 0 0 15px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+.rules-body {
+    max-height: 350px; overflow-y: auto; padding-right: 10px;
+}
+.rules-body h3 { color: #8b5a2b; font-size: 1.05rem; margin: 15px 0 5px 0; border-bottom: 1px dashed #ccbba3; padding-bottom: 3px; }
+.rules-body p { margin: 0 0 10px 0; font-size: 0.9rem; color: #444; line-height: 1.4; }
+
+@keyframes popIn { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.modal-content h2 { color: #8b5a2b; font-size: 1.8rem; margin: 0; }
 .stats-list { text-align: left; background: #e2d7c5; padding: 15px; border-radius: 10px; margin: 15px 0; border: 1px solid #d7c9b1; }
 .stats-list p { margin: 8px 0; font-weight: bold; color: #5c3a21; font-size: 0.95rem; }
 
-#revanch-btn {
-    background-color: #4CAF50;
-    font-size: 1.1rem;
-    padding: 12px;
-    margin-top: 5px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-}
-#revanch-btn:hover { background-color: #43a047; }
+#revanch-btn, #close-rules-btn { background-color: #4CAF50; font-size: 1.1rem; padding: 12px; margin-top: 5px; border-radius: 8px; }
+#revanch-btn:hover, #close-rules-btn:hover { background-color: #43a047; }
 
 /* ==========================================
-   MEDIA QUERIES POUR SMARTPHONES (Écrans < 500px)
+   RESPONSIVE MOBILE
    ========================================== */
 @media (max-width: 500px) {
     body { padding: 5px; }
@@ -294,5 +226,4 @@ button:hover { background-color: #5c3a21; }
     .hole-count { font-size: 0.9rem; }
     .seed { width: 6px; height: 6px; }
     .score-box p { font-size: 1rem; }
-    h2 { font-size: 1.2rem; }
 }
