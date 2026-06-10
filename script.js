@@ -6,7 +6,12 @@ let currentTour = 1;
 let isGameOver = false;
 let logs = ["La partie a été réinitialisée. Bonne chance aux deux joueurs !"];
 let maxCaptureRecord = 0; 
-let isGameActive = false; // Permet de savoir si on est au menu ou en jeu
+let isGameActive = false;
+
+// Variables de gestion pour le Quantum de Temps
+let quantumDuration = 15; 
+let timeLeft = 15;
+let timerInterval = null;
 
 const holesElements = document.querySelectorAll('.hole');
 const turnIndicator = document.getElementById('turn-indicator');
@@ -18,7 +23,7 @@ const notificationElement = document.getElementById('notification');
 const startPlayerSelect = document.getElementById('start-player-select');
 const revanchBtn = document.getElementById('revanch-btn');
 
-// Nouveaux Éléments de l'interface Menu/Règles/Quitter
+// Éléments de l'interface Menu/Règles/Quitter
 const mainMenu = document.getElementById('main-menu');
 const gameContainer = document.getElementById('game-container');
 const startGameBtn = document.getElementById('start-game-btn');
@@ -27,24 +32,37 @@ const openRulesBtn = document.getElementById('open-rules-btn');
 const closeRulesBtn = document.getElementById('close-rules-btn');
 const rulesModal = document.getElementById('rules-modal');
 
-// ÉCOUTEURS D'ÉVÉNEMENTS DES NOUVEAUX BOUTONS
+// Éléments du Chronomètre
+const quantumInput = document.getElementById('quantum-input');
+const timerCounter = document.getElementById('timer-counter');
+const timerBarFill = document.getElementById('timer-bar-fill');
+
+// ÉCOUTEURS D'ÉVÉNEMENTS DES BOUTONS
 if (startGameBtn) {
     startGameBtn.addEventListener('click', () => {
+        // Validation stricte du Quantum de temps entre 5s et 60s
+        let userTime = parseInt(quantumInput.value) || 15;
+        if (userTime < 5) userTime = 5;
+        if (userTime > 60) userTime = 60;
+        quantumInput.value = userTime; 
+        quantumDuration = userTime;
+
         isGameActive = true;
         mainMenu.style.display = "none";
         gameContainer.style.display = "block";
         saveMenuState();
-        updateDisplay();
+        resetLocalGame(); // Lance le plateau et démarre le chrono
     });
 }
 
 if (quitGameBtn) {
     quitGameBtn.addEventListener('click', () => {
         if (confirm("Êtes-vous sûr de vouloir abandonner la partie en cours ?")) {
+            stopTimer();
             isGameActive = false;
             mainMenu.style.display = "block";
             gameContainer.style.display = "none";
-            resetLocalGame(); // Réinitialise tout proprement
+            localStorage.removeItem('songho_save');
             saveMenuState();
         }
     });
@@ -67,6 +85,7 @@ if (startPlayerSelect) {
         if (currentTour === 1 && scores["1"] === 0 && scores["2"] === 0) {
             determineStartingPlayer();
             updateDisplay();
+            startTimer(); // Relance le chrono pour le joueur désigné
         }
     });
 }
@@ -81,6 +100,59 @@ function determineStartingPlayer() {
         currentPlayer = parseInt(choice);
         logs = [`La partie commence. Joueur ${currentPlayer} au coup !`];
     }
+}
+
+// ==========================================
+// MOTEUR DU CHRONOMÈTRE (QUANTUM DE TEMPS)
+// ==========================================
+function startTimer() {
+    stopTimer(); 
+    if (isGameOver) return;
+
+    timeLeft = quantumDuration;
+    updateTimerUI();
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerUI();
+
+        if (timeLeft <= 0) {
+            stopTimer();
+            handleTimeOut();
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+function updateTimerUI() {
+    if (timerCounter) timerCounter.innerText = timeLeft;
+    if (timerBarFill) {
+        const percentage = (timeLeft / quantumDuration) * 100;
+        timerBarFill.style.width = `${percentage}%`;
+        // La barre devient rouge sous les 4 secondes
+        timerBarFill.style.backgroundColor = timeLeft <= 4 ? "#d32f2f" : "#4CAF50";
+    }
+}
+
+function handleTimeOut() {
+    playSound('error');
+    // Ajout textuel propre dans l'historique d'origine
+    logs.push(`⏱️ Tour ${currentTour} : Temps écoulé pour le Joueur ${currentPlayer} ! Son tour est sauté.`);
+    
+    // Changement de joueur
+    let nextPlayer = currentPlayer === 1 ? 2 : 1;
+    if (currentPlayer === 1) currentTour++;
+    currentPlayer = nextPlayer;
+
+    saveGame();
+    updateDisplay();
+    startTimer(); // Démarre le chrono du joueur suivant
 }
 
 // ==========================================
@@ -150,13 +222,13 @@ function saveGame() {
         maxCaptureRecord: maxCaptureRecord,
         selectDisabled: startPlayerSelect ? startPlayerSelect.disabled : false,
         selectValue: startPlayerSelect ? startPlayerSelect.value : "2",
-        isGameActive: isGameActive
+        isGameActive: isGameActive,
+        quantumDuration: quantumDuration
     };
     localStorage.setItem('songho_save', JSON.stringify(gameState));
 }
 
 function saveMenuState() {
-    // Permet de mémoriser si le joueur était sur l'écran d'accueil ou en partie
     let savedState = localStorage.getItem('songho_save');
     if (savedState) {
         let state = JSON.parse(savedState);
@@ -180,16 +252,18 @@ function loadGame() {
             logs = state.logs;
             maxCaptureRecord = state.maxCaptureRecord || 0;
             isGameActive = state.isGameActive !== undefined ? state.isGameActive : false;
+            quantumDuration = state.quantumDuration || 15;
+            quantumInput.value = quantumDuration;
             
             if (startPlayerSelect) {
                 startPlayerSelect.value = state.selectValue || "2";
                 startPlayerSelect.disabled = state.selectDisabled || false;
             }
 
-            // Gère l'affichage correct des écrans restaurés
             if (isGameActive) {
                 mainMenu.style.display = "none";
                 gameContainer.style.display = "block";
+                startTimer(); // Reprendre l'écoute du temps restant
             } else {
                 mainMenu.style.display = "block";
                 gameContainer.style.display = "none";
@@ -245,6 +319,7 @@ function updateDisplay() {
     if (document.getElementById('score-j2')) document.getElementById('score-j2').innerText = scores["2"];
     if (tourCountSpan) tourCountSpan.innerText = currentTour;
 
+    // Historique noir d'origine et codes couleurs conservés
     if (logsContainer) {
         logsContainer.innerHTML = logs.map(log => {
             let cl = "system";
@@ -334,6 +409,7 @@ holesElements.forEach(hole => {
 
         if (startPlayerSelect) startPlayerSelect.disabled = true;
         
+        stopTimer(); // On gèle le chronomètre pendant la cinématique de semis
         document.getElementById('board').style.pointerEvents = "none";
         await executeMove(selectedIndex);
         document.getElementById('board').style.pointerEvents = "auto";
@@ -385,7 +461,7 @@ async function executeMove(startIndex) {
 
         if (totalAdversaireApresCapture === 0 && localCaptured > 0) {
             board = tempBoardBeforeCapture;
-            logs.push(`⚠️ Tour ${currentTour} : Capture annulée (Famine imposée).`);
+            logs.push(`⚠️ Tour ${currentTour} : Capture annulée par le système (Famine imposée).`);
         } else {
             captured = localCaptured;
             if (captured > maxCaptureRecord) maxCaptureRecord = captured; 
@@ -424,6 +500,7 @@ async function executeMove(startIndex) {
     } else {
         if (currentPlayer === 1) currentTour++;
         currentPlayer = nextPlayer;
+        startTimer(); // Relance immédiate du chrono pour l'autre joueur
     }
     
     saveGame(); 
@@ -431,6 +508,7 @@ async function executeMove(startIndex) {
 }
 
 function showVictoryModal() {
+    stopTimer(); // Arrêt total de la boucle de temps
     const modal = document.getElementById('victory-modal');
     const winnerName = document.getElementById('winner-name');
     if (!modal) return;
@@ -464,9 +542,11 @@ function resetLocalGame() {
     determineStartingPlayer(); 
     saveGame();
     updateDisplay();
+    startTimer(); // Lance le décompte du premier coup
 }
 
 // Initialisation au chargement
 if (!loadGame()) {
-    resetLocalGame(); 
+    mainMenu.style.display = "block";
+    gameContainer.style.display = "none";
 }
